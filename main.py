@@ -226,26 +226,57 @@ async def main():
         bot.set_state(user_id, BotStates.app_image, message.chat.id)
         bot.send_message(message.chat.id, get_text("app_image_question"))
 
-    @bot.message_handler(state=BotStates.app_image, content_types=['photo'])
-    def app_image_handler(message):
-        user_id = message.from_user.id
-        user_data[user_id]['app_image'] = message.photo[-1].file_id
-        bot.set_state(user_id, BotStates.hashtag, message.chat.id)
-        hashtags = {
-            'ألعاب': {'callback_data': '#games'}, 'تواصل اجتماعي': {'callback_data': '#Social'},
-            'تعديل': {'callback_data': '#editing'}, 'VPN': {'callback_data': '#vpn'},
-            'أدوات': {'callback_data': '#Tools'}, 'مشاهدة': {'callback_data': '#watching'},
-            'وسائط متعددة': {'callback_data': '#multimedia'}, 'متصفح': {'callback_data': '#browser'},
-            'ترجمة': {'callback_data': '#translate'}, 'متجر': {'callback_data': '#store'},
-            'تسجيل': {'callback_data': '#record'}, 'نصائح': {'callback_data': '#tips'},
-            'كتب': {'callback_data': '#books'}, 'خلفيات': {'callback_data': '#wallpapers'},
-            'ثيمات': {'callback_data': '#themes'}, 'تعليم': {'callback_data': '#learning'},
-            'ديني': {'callback_data': '#religious'}, 'أخبار': {'callback_data': '#news'},
-            'موسيقى': {'callback_data': '#music'}, 'كيبورد': {'callback_data': '#keyboard'},
-            'كاميرا': {'callback_data': '#camera'}, 'ذكاء اصطناعي': {'callback_data': '#AI'}
-        }
-        markup = quick_markup(hashtags, row_width=3)
-        bot.send_message(message.chat.id, get_text("hashtag_question"), reply_markup=markup)
+        @bot.message_handler(state=BotStates.app_image, content_types=['photo'])
+
+        def app_image_handler(message):
+
+            user_id = message.from_user.id
+
+            user_data[user_id]['app_image'] = message.photo[-1].file_id
+
+    
+
+            if user_data[user_id].get('post_type') == 'game':
+
+                user_data[user_id]['hashtag'] = '#games'
+
+                bot.set_state(user_id, BotStates.app_file, message.chat.id)
+
+                bot.send_message(message.chat.id, get_text("app_file_question"))
+
+            else:
+
+                bot.set_state(user_id, BotStates.hashtag, message.chat.id)
+
+                hashtags = {
+
+                    'تواصل اجتماعي': {'callback_data': '#Social'}, 'تعديل': {'callback_data': '#editing'},
+
+                    'VPN': {'callback_data': '#vpn'}, 'أدوات': {'callback_data': '#Tools'},
+
+                    'مشاهدة': {'callback_data': '#watching'}, 'وسائط متعددة': {'callback_data': '#multimedia'},
+
+                    'متصفح': {'callback_data': '#browser'}, 'ترجمة': {'callback_data': '#translate'},
+
+                    'متجر': {'callback_data': '#store'}, 'تسجيل': {'callback_data': '#record'},
+
+                    'نصائح': {'callback_data': '#tips'}, 'كتب': {'callback_data': '#books'},
+
+                    'خلفيات': {'callback_data': '#wallpapers'}, 'ثيمات': {'callback_data': '#themes'},
+
+                    'تعليم': {'callback_data': '#learning'}, 'ديني': {'callback_data': '#religious'},
+
+                    'أخبار': {'callback_data': '#news'}, 'موسيقى': {'callback_data': '#music'},
+
+                    'كيبورد': {'callback_data': '#keyboard'}, 'كاميرا': {'callback_data': '#camera'},
+
+                    'ذكاء اصطناعي': {'callback_data': '#AI'}
+
+                }
+
+                markup = quick_markup(hashtags, row_width=3)
+
+                bot.send_message(message.chat.id, get_text("hashtag_question"), reply_markup=markup)
 
     @bot.callback_query_handler(state=BotStates.hashtag)
     def hashtag_callback(call):
