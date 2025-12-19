@@ -16,6 +16,9 @@ translations = {
         "welcome": "أهلاً بك في بوت premium-techs-bot!",
         "start_button": "ابدأ",
         "unauthorized": "أنت غير مصرح لك باستخدام هذا البوت.",
+        "post_type_question": "يرجى اختيار نوع المنشور:",
+        "app_button": "تطبيق",
+        "game_button": "لعبة",
         "app_type_question": "يرجى اختيار نوع التطبيق:",
         "mod_button": "معدل",
         "official_button": "رسمي",
@@ -65,6 +68,7 @@ user_data = {}
 
 class BotStates(StatesGroup):
     start = State()
+    post_type = State()
     app_type = State()
     source = State()
     publish_target = State()
@@ -100,17 +104,30 @@ async def main():
 
     @bot.callback_query_handler(func=lambda call: call.data == 'start_conversation')
     def start_conversation_callback(call):
-        bot.set_state(call.from_user.id, BotStates.app_type, call.message.chat.id)
+        bot.set_state(call.from_user.id, BotStates.post_type, call.message.chat.id)
+        markup = quick_markup({
+            get_text("app_button"): {'callback_data': 'post_type_app'},
+            get_text("game_button"): {'callback_data': 'post_type_game'}
+        }, row_width=2)
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=get_text("post_type_question"), reply_markup=markup)
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith('post_type_'))
+    def post_type_callback(call):
+        user_id = call.from_user.id
+        user_data[user_id] = {'post_type': call.data.split('_')[2], 'original_poster_id': user_id}
+        bot.answer_callback_query(call.id, f"لقد اخترت: {user_data[user_id]['post_type']}")
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=get_text("great_next_step"))
+        bot.set_state(user_id, BotStates.app_type, call.message.chat.id)
         markup = quick_markup({
             get_text("mod_button"): {'callback_data': 'app_type_mod'},
             get_text("official_button"): {'callback_data': 'app_type_official'}
         }, row_width=2)
-        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=get_text("app_type_question"), reply_markup=markup)
+        bot.send_message(call.message.chat.id, get_text("app_type_question"), reply_markup=markup)
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('app_type_'))
     def app_type_callback(call):
         user_id = call.from_user.id
-        user_data[user_id] = {'app_type': call.data.split('_')[2], 'original_poster_id': user_id}
+        user_data[user_id]['app_type'] = call.data.split('_')[2]
         bot.answer_callback_query(call.id, f"لقد اخترت: {user_data[user_id]['app_type']}")
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=get_text("great_next_step"))
         bot.set_state(user_id, BotStates.source, call.message.chat.id)
@@ -307,7 +324,7 @@ async def main():
             data = user_data[user_id]
             publish_target = data.get('publish_target')
             
-            post_template_ar = f"""🧩 تطبيق {data.get('app_name')}
+            post_template_ar = f"""🧩 { 'تطبيق' if data.get('post_type') == 'app' else 'لعبة'} {data.get('app_name')}
 📍من { 'مقترحات القناة' if data.get('source') == 'recommendation' else 'طلبات المشتركين'} 
 ⚡ الوصف : {data.get('app_description')}
 🧊 الإصدار:  {data.get('app_version')}
@@ -317,7 +334,7 @@ async def main():
 للتنزيل من هنا ⬇️ {data.get('hashtag')}
 """
             
-            post_template_en = f"""🧩 App: {data.get('app_name')}
+            post_template_en = f"""🧩 { 'App' if data.get('post_type') == 'app' else 'Game'}: {data.get('app_name')}
 📍From: { 'Channel Recommendation' if data.get('source') == 'recommendation' else 'Subscriber Request'}
 ⚡ Description: {data.get('english_description') if 'english_description' in data else data.get('app_description')}
 🧊 Version: {data.get('app_version')}
