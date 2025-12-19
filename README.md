@@ -5,7 +5,8 @@ the open source version of a telegram bot to help the admins of premium techs te
 1. clone the repo
 2. insure you have uv installed
 ```
-pip install uv```
+pip install uv
+```
 3. cd to the project and run
 ```
 uv sync
