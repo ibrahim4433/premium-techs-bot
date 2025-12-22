@@ -161,10 +161,6 @@ def fetch_icon_from_play_store(url):
 # In-memory storage for user data
 user_data = {}
 
-def get_full_admin_ids():
-    full_admin_id_env = os.environ.get("FULL_ADMIN_ID", "")
-    return [id.strip() for id in full_admin_id_env.split(',') if id.strip()]
-
 class BotStates(StatesGroup):
     start = State()
     post_type = State()
@@ -534,22 +530,15 @@ def ask_confirmation(chat_id, user_id):
 
 @bot.message_handler(commands=['start'])
 def start_command(message):
-    allowed_posters_ids = [id.strip() for id in os.environ.get("ALLOWED_POSTERS_IDS", "").split(',') if id.strip()]
-    full_admin_ids = get_full_admin_ids()
-    user_id_str = str(message.from_user.id)
+    allowed_posters_ids = os.environ.get("ALLOWED_POSTERS_IDS", "").split(',')
+    full_admin_id = os.environ.get("FULL_ADMIN_ID")
     
-    if user_id_str not in allowed_posters_ids and user_id_str not in full_admin_ids:
+    if str(message.from_user.id) not in allowed_posters_ids and str(message.from_user.id) != full_admin_id:
         bot.send_message(message.chat.id, get_text("unauthorized"))
         return
     
-    welcome_msg = get_text("welcome")
-    if user_id_str in full_admin_ids:
-        welcome_msg += "\n\nاستمتع بالادارة"
-    elif user_id_str in allowed_posters_ids:
-        welcome_msg += "\n\nاستمتع بالنشر"
-
     markup = quick_markup({get_text("start_button"): {'callback_data': 'start_conversation'}})
-    bot.send_message(message.chat.id, welcome_msg, reply_markup=markup, parse_mode='Markdown')
+    bot.send_message(message.chat.id, get_text("welcome"), reply_markup=markup, parse_mode='Markdown')
 
 @bot.callback_query_handler(func=lambda call: call.data == 'start_conversation')
 def start_conversation_callback(call):
@@ -1013,19 +1002,16 @@ def confirmation_callback(call):
         bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=get_text("request_pending"))
         
         # Send to full admin for approval
-        full_admin_ids = get_full_admin_ids()
-        for full_admin_id in full_admin_ids:
+        full_admin_id = os.environ.get("FULL_ADMIN_ID")
+        if full_admin_id:
             data = user_data[user_id]
             admin_message = f"{get_text('new_submission')} {call.from_user.first_name}:\n\n{call.message.caption}"
             markup = quick_markup({
                 get_text("approve_button"): {'callback_data': f'admin_approve_{user_id}'},
                 get_text("reject_button"): {'callback_data': f'admin_reject_{user_id}'}
             }, row_width=2)
-            try:
-                bot.send_photo(chat_id=full_admin_id, photo=data['app_image'], caption=admin_message, reply_markup=markup)
-                bot.send_document(chat_id=full_admin_id, document=data['app_file'])
-            except Exception as e:
-                print(f"Error sending to admin {full_admin_id}: {e}")
+            bot.send_photo(chat_id=full_admin_id, photo=data['app_image'], caption=admin_message, reply_markup=markup)
+            bot.send_document(chat_id=full_admin_id, document=data['app_file'])
 
         bot.delete_state(user_id, call.message.chat.id)
 
@@ -1316,8 +1302,6 @@ def admin_approval_callback(call):
             bot.send_message(original_poster_id, "✅ Published! Type /start")
 
         bot.delete_state(user_id)
-        if user_id in user_data:
-            del user_data[user_id]
 
     elif action == 'reject':
         admin_id = call.from_user.id
