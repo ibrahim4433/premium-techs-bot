@@ -161,6 +161,10 @@ def fetch_icon_from_play_store(url):
 # In-memory storage for user data
 user_data = {}
 
+def get_full_admin_ids():
+    full_admin_id_env = os.environ.get("FULL_ADMIN_ID", "")
+    return [id.strip() for id in full_admin_id_env.split(',') if id.strip()]
+
 class BotStates(StatesGroup):
     start = State()
     post_type = State()
@@ -531,9 +535,9 @@ def ask_confirmation(chat_id, user_id):
 @bot.message_handler(commands=['start'])
 def start_command(message):
     allowed_posters_ids = os.environ.get("ALLOWED_POSTERS_IDS", "").split(',')
-    full_admin_id = os.environ.get("FULL_ADMIN_ID")
+    full_admin_ids = get_full_admin_ids()
     
-    if str(message.from_user.id) not in allowed_posters_ids and str(message.from_user.id) != full_admin_id:
+    if str(message.from_user.id) not in allowed_posters_ids and str(message.from_user.id) not in full_admin_ids:
         bot.send_message(message.chat.id, get_text("unauthorized"))
         return
     
@@ -1002,16 +1006,19 @@ def confirmation_callback(call):
         bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=get_text("request_pending"))
         
         # Send to full admin for approval
-        full_admin_id = os.environ.get("FULL_ADMIN_ID")
-        if full_admin_id:
+        full_admin_ids = get_full_admin_ids()
+        for full_admin_id in full_admin_ids:
             data = user_data[user_id]
             admin_message = f"{get_text('new_submission')} {call.from_user.first_name}:\n\n{call.message.caption}"
             markup = quick_markup({
                 get_text("approve_button"): {'callback_data': f'admin_approve_{user_id}'},
                 get_text("reject_button"): {'callback_data': f'admin_reject_{user_id}'}
             }, row_width=2)
-            bot.send_photo(chat_id=full_admin_id, photo=data['app_image'], caption=admin_message, reply_markup=markup)
-            bot.send_document(chat_id=full_admin_id, document=data['app_file'])
+            try:
+                bot.send_photo(chat_id=full_admin_id, photo=data['app_image'], caption=admin_message, reply_markup=markup)
+                bot.send_document(chat_id=full_admin_id, document=data['app_file'])
+            except Exception as e:
+                print(f"Error sending to admin {full_admin_id}: {e}")
 
         bot.delete_state(user_id, call.message.chat.id)
 
