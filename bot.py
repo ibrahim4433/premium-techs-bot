@@ -910,7 +910,7 @@ def ask_confirmation(chat_id, user_id):
         # Generate caption with clean app name
         app_name = data.get("app_name", "File")
         clean_name = get_clean_filename(app_name)
-        file_caption = f"{clean_name}\n@premium_techs\n@premium_techs_EN"
+        file_caption = f"{clean_name}\n@premium_techs"
         bot.send_document(chat_id=chat_id, document=file_id, caption=file_caption)
 
 
@@ -1913,7 +1913,7 @@ def admin_approval_callback(call):
             header = f"🧩 {type_str}: {data.get('app_name')}\n📍من {source_str}"
 
             # Footer template with {features} placeholder preserved
-            footer_template = f"🧊 الإصدار:  {data.get('app_version')}\n🏷 {mod_label}:\n{{features}}\n              ༺━━ @premium_techs ━━༻\nللتنزيل من هنا ⬇️ {data.get('hashtag')}"
+            footer_template = f"🧊 الإصدار:   {data.get('app_version')}\n🏷 {mod_label}:\n{{features}}\n              ༺━━ @premium_techs ━━༻\nللتنزيل من هنا ⬇️ {data.get('hashtag')}"
 
             features_text = data.get("mod_features", "")
             modder_name = data.get("modded_by")
@@ -1948,7 +1948,7 @@ def admin_approval_callback(call):
             header = f"🧩 {type_str}: {data.get('app_name')}\n📍From: {source_str}"
 
             # Footer template with {features} placeholder preserved
-            footer_template = f"🧊 Version: {data.get('app_version')}\n🏷 {mod_label}:\n{{features}}\n              ༺━━ @premium_techs ━━༻\nDownload from here ⬇️ {data.get('hashtag')}"
+            footer_template = f"🧊 Version:  {data.get('app_version')}\n🏷 {mod_label}:\n{{features}}\n              ༺━━ @premium_techs ━━༻\nDownload from here ⬇️ {data.get('hashtag')}"
 
             features_text = (
                 data.get("english_mod_features")
@@ -2009,7 +2009,7 @@ def admin_approval_callback(call):
                 # Generate caption with clean app name
                 app_name = data.get("app_name", "File")
                 clean_name = get_clean_filename(app_name)
-                file_caption = f"{clean_name}\n@premium_techs\n@premium_techs_EN"
+                file_caption = f"{clean_name}\n@premium_techs"
                 sent_doc = bot.send_document(chat_id=channel_id, document=file_id, caption=file_caption)
                 last_msg_id = sent_doc.message_id
 
@@ -2047,7 +2047,7 @@ def admin_approval_callback(call):
                 # Generate caption with clean app name
                 app_name = data.get("app_name", "File")
                 clean_name = get_clean_filename(app_name)
-                file_caption = f"{clean_name}\n@premium_techs"
+                file_caption = f"{clean_name}\n@premium_techs_en"
                 sent_doc = bot.send_document(chat_id=channel_id, document=file_id, caption=file_caption)
                 last_msg_id = sent_doc.message_id
 
