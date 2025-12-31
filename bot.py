@@ -1913,7 +1913,7 @@ def admin_approval_callback(call):
             header = f"🧩 {type_str}: {data.get('app_name')}\n📍من {source_str}"
 
             # Footer template with {features} placeholder preserved
-            footer_template = f"🧊 الإصدار:  {data.get('app_version')}\n🏷 {mod_label}:\n{{features}}\n              ༺━━ @premium_techs ━━༻\nللتنزيل من هنا ⬇️ {data.get('hashtag')}"
+            footer_template = f"🧊 الإصدار:   {data.get('app_version')}\n🏷 {mod_label}:\n{{features}}\n              ༺━━ @premium_techs ━━༻\nللتنزيل من هنا ⬇️ {data.get('hashtag')}"
 
             features_text = data.get("mod_features", "")
             modder_name = data.get("modded_by")
@@ -1948,7 +1948,7 @@ def admin_approval_callback(call):
             header = f"🧩 {type_str}: {data.get('app_name')}\n📍From: {source_str}"
 
             # Footer template with {features} placeholder preserved
-            footer_template = f"🧊 Version: {data.get('app_version')}\n🏷 {mod_label}:\n{{features}}\n              ༺━━ @premium_techs ━━༻\nDownload from here ⬇️ {data.get('hashtag')}"
+            footer_template = f"🧊 Version:  {data.get('app_version')}\n🏷 {mod_label}:\n{{features}}\n              ༺━━ @premium_techs ━━༻\nDownload from here ⬇️ {data.get('hashtag')}"
 
             features_text = (
                 data.get("english_mod_features")
